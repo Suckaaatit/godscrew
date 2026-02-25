@@ -1,0 +1,26 @@
+{
+  "name": "anakin-gtm-automation",
+  "version": "1.0.0",
+  "description": "GTM automation with optional webhook-based CRM reply tracking: HubSpot + Resend + Express",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "setup": "node setup-hubspot.js",
+    "create-contacts": "node create-contacts.js",
+    "send": "node send-emails.js",
+    "webhook": "node webhook-server.js",
+    "ui:build": "tsc -p tsconfig.ui.json",
+    "ui": "npm run ui:build && node ui/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "resend": "^3.2.0",
+    "svix": "^1.86.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

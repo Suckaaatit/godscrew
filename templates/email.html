@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email</title>
+  <!--
+    NO <style> block here. Gmail strips everything in <head>.
+    All styles are inline on each element below.
+    Layout uses tables — Gmail does not support flexbox or grid.
+  -->
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f5;padding:40px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:8px;max-width:600px;width:100%;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#0f0f0f;padding:24px 40px;border-radius:8px 8px 0 0;">
+              <span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:-0.5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                Anakin
+              </span>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:36px 40px;color:#1a1a1a;font-size:15px;line-height:1.7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+              <p style="margin:0 0 18px;color:#1a1a1a;font-size:15px;line-height:1.7;">
+                Hi {{FIRST_NAME}},
+              </p>
+
+              <p style="margin:0 0 18px;color:#1a1a1a;font-size:15px;line-height:1.7;">
+                {{CUSTOM_INTRO}}
+              </p>
+
+              <!-- Anakin business explanation — required by JD -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0;">
+                <tr>
+                  <td style="background-color:#f8f8f8;border-left:3px solid #0f0f0f;padding:14px 20px;border-radius:0 6px 6px 0;">
+                    <p style="margin:0;color:#444444;font-size:14px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                      {{ANAKIN_LINE}}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 18px;color:#1a1a1a;font-size:15px;line-height:1.7;">
+                {{CUSTOM_BODY}}
+              </p>
+
+              <p style="margin:0 0 4px;color:#1a1a1a;font-size:15px;line-height:1.7;">
+                Would love to hear your thoughts.
+              </p>
+
+              <p style="margin:24px 0 0;">
+                <span style="font-weight:600;color:#1a1a1a;font-size:15px;display:block;">{{SENDER_NAME}}</span>
+                <span style="color:#888888;font-size:13px;display:block;margin-top:2px;">GTM Automation Engineer Candidate</span>
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="border-top:1px solid #eeeeee;padding:18px 40px;border-radius:0 0 8px 8px;">
+              <p style="margin:0;color:#aaaaaa;font-size:12px;line-height:1.5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                You received this because your work aligns with what we are building at Anakin.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
