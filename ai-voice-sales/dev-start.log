@@ -1,0 +1,228 @@
+
+> ai-voice-sales@1.0.0 dev
+> next dev --hostname 127.0.0.1 --port 3010
+
+   ▲ Next.js 15.5.12
+   - Local:        http://127.0.0.1:3010
+   - Network:      http://127.0.0.1:3010
+
+ ✓ Starting...
+ ✓ Ready in 4.6s
+ ○ Compiling / ...
+ ✓ Compiled / in 6s (574 modules)
+ GET / 200 in 6971ms
+ ✓ Compiled in 1267ms (217 modules)
+ ✓ Compiled in 208ms (217 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 2.2s (549 modules)
+ GET / 200 in 3738ms
+ GET / 200 in 1950ms
+   Reload env: .env.local
+ ✓ Compiled in 7.5s (580 modules)
+   Reload env: .env.local
+ ✓ Compiled in 337ms (539 modules)
+ GET / 200 in 1498ms
+ GET / 200 in 149ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.4s (530 modules)
+ GET / 404 in 3715ms
+ GET / 404 in 52ms
+ ○ Compiling / ...
+ ✓ Compiled / in 7.3s (544 modules)
+ GET / 200 in 8350ms
+ GET / 200 in 93ms
+ ⨯ ./src/app/page.module.css
+Module not found: Can't resolve 'c:\Users\AKASH\Downloads\files\ai-voice-sales\src\app\page.module.css'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/page.tsx
+ ⨯ ./src/app/page.module.css
+Error: ENOENT: no such file or directory, open 'c:\Users\AKASH\Downloads\files\ai-voice-sales\src\app\page.module.css'
+
+Import trace for requested module:
+./src/app/page.module.css
+./src/app/page.tsx
+ ○ Compiling /_error ...
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|javascript/auto|c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\next-flight-css-loader.js??ruleSet[1].rules[14].oneOf[5].use[0]!c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\compiled\mini-css-extract-plugin\loader.js??ruleSet[1].rules[14].oneOf[5].use[1]!c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\css-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[2]!c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\postcss-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[3]!c:\Users\AKASH\Downloads\files\ai-voice-sales\src\app\page.module.css|app-pages-browser': No serializer registered for ModuleNotFoundError
+<w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> webpack/lib/ModuleBuildError -> ModuleNotFoundError
+ ⨯ ./src/app/page.module.css
+Module not found: Can't resolve 'c:\Users\AKASH\Downloads\files\ai-voice-sales\src\app\page.module.css'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/page.tsx
+ GET / 500 in 16494ms
+ GET / 500 in 3086ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled /_error in 1074ms (895 modules)
+ GET / 200 in 1292ms
+ HEAD / 200 in 87ms
+ ✓ Compiled in 7.2s (885 modules)
+ ✓ Compiled in 1120ms (895 modules)
+ GET / 200 in 1262ms
+ GET / 200 in 5686ms
+ GET / 200 in 303ms
+ GET / 200 in 231ms
+ ⨯ ./src/app/page.module.css
+Error: ENOENT: no such file or directory, open 'c:\Users\AKASH\Downloads\files\ai-voice-sales\src\app\page.module.css'
+
+Import trace for requested module:
+./src/app/page.module.css
+./src/app/page.tsx
+ ⨯ ./src/app/page.module.css
+Module not found: Can't resolve 'c:\Users\AKASH\Downloads\files\ai-voice-sales\src\app\page.module.css'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/page.tsx
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|javascript/auto|c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\next-flight-css-loader.js??ruleSet[1].rules[14].oneOf[5].use[0]!c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\compiled\mini-css-extract-plugin\loader.js??ruleSet[1].rules[14].oneOf[5].use[1]!c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\css-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[2]!c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\postcss-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[3]!c:\Users\AKASH\Downloads\files\ai-voice-sales\src\app\page.module.css|app-pages-browser': No serializer registered for ModuleNotFoundError
+<w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> webpack/lib/ModuleBuildError -> ModuleNotFoundError
+ ✓ Compiled in 737ms (895 modules)
+ GET / 200 in 366ms
+ ✓ Compiled in 1376ms (895 modules)
+ ⨯ ReferenceError: sora is not defined
+    at RootLayout (src\app\layout.tsx:28:27)
+  26 |   return (
+  27 |     <html lang="en">
+> 28 |       <body className={`${sora.variable} ${mono.variable}`}>{children}</body>
+     |                           ^
+  29 |       <body className={`${manrope.variable} ${mono.variable}`}>{children}</body>
+  30 |     </html>
+  31 |   ); {
+  digest: '2126523796'
+}
+ GET / 200 in 209ms
+ ✓ Compiled in 305ms (509 modules)
+ GET / 200 in 424ms
+ ✓ Compiled in 808ms (899 modules)
+ GET / 200 in 201ms
+ ✓ Compiled in 2.8s (885 modules)
+ ✓ Compiled in 326ms (885 modules)
+ ⨯ ./src/app/page.module.css:613:1
+Syntax error: Selector "main > section:nth-of-type(1)" is not pure (pure selectors must contain at least one local class or id)
+
+ [90m 611 | [39m[33m}[39m
+ [90m 612 | [39m
+[1m[31m>[39m[22m[90m 613 | [39mmain > section[33m:[39m[36mnth-of-type[39m[36m(1)[39m [33m{[39m
+ [90m     | [39m[1m[31m^[39m[22m
+ [90m 614 | [39m  animation-delay[33m:[39m 40ms[33m;[39m
+ [90m 615 | [39m[33m}[39m
+ HEAD / 500 in 94ms
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\css-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[2]!c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\postcss-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[3]!c:\Users\AKASH\Downloads\files\ai-voice-sales\src\app\page.module.css': No serializer registered for CssSyntaxError
+<w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> webpack/lib/ModuleBuildError -> CssSyntaxError
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|javascript/auto|c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\next-flight-css-loader.js??ruleSet[1].rules[14].oneOf[5].use[0]!c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\css-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[1]!c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\webpack\loaders\postcss-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[2]!c:\Users\AKASH\Downloads\files\ai-voice-sales\src\app\page.module.css|ssr': No serializer registered for CssSyntaxError
+<w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> webpack/lib/ModuleBuildError -> CssSyntaxError
+ ⨯ ./src/app/page.module.css:613:1
+Syntax error: Selector "main > section:nth-of-type(1)" is not pure (pure selectors must contain at least one local class or id)
+
+ [90m 611 | [39m[33m}[39m
+ [90m 612 | [39m
+[1m[31m>[39m[22m[90m 613 | [39mmain > section[33m:[39m[36mnth-of-type[39m[36m(1)[39m [33m{[39m
+ [90m     | [39m[1m[31m^[39m[22m
+ [90m 614 | [39m  animation-delay[33m:[39m 40ms[33m;[39m
+ [90m 615 | [39m[33m}[39m
+ ✓ Compiled in 3s (895 modules)
+ GET / 200 in 443ms
+ HEAD / 200 in 576ms
+ ✓ Compiled in 5s (885 modules)
+ ✓ Compiled in 1698ms (895 modules)
+ GET / 200 in 457ms
+ ✓ Compiled in 1577ms (895 modules)
+ GET / 200 in 329ms
+ ✓ Compiled in 945ms (895 modules)
+ GET / 200 in 757ms
+ HEAD / 200 in 429ms
+ ⨯ Error: Could not find the module "c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3744778899'
+}
+ ⨯ Error: Could not find the module "c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3152413881'
+}
+ ⨯ Error: Could not find the module "c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3152413881'
+}
+ ⨯ Error: Could not find the module "c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3152413881'
+}
+ ⨯ Error: Could not find the module "c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3744778899'
+}
+ ⨯ Error: Could not find the module "c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3744778899'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '991436671'
+}
+ ⨯ Error: Could not find the module "c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3744778899'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\.next\server\webpack-runtime.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\.next\server\app\page.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\server\require.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\server\load-components.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\utils.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\swc\options.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\swc\index.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\analysis\parse-module.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\analysis\get-page-static-info.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\server\lib\router-server.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (c:\Users\AKASH\Downloads\files\ai-voice-sales\.next\server\pages\_document.js:1:321)
+    at Object.<anonymous> (c:\Users\AKASH\Downloads\files\ai-voice-sales\.next\server\pages\_document.js:1:366) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\.next\server\webpack-runtime.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\.next\server\app\page.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\server\require.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\server\load-components.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\utils.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\swc\options.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\swc\index.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\analysis\parse-module.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\build\analysis\get-page-static-info.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\server\lib\router-server.js
+- c:\Users\AKASH\Downloads\files\ai-voice-sales\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (c:\Users\AKASH\Downloads\files\ai-voice-sales\.next\server\pages\_document.js:1:321)
+    at Object.<anonymous> (c:\Users\AKASH\Downloads\files\ai-voice-sales\.next\server\pages\_document.js:1:366) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ HEAD / 500 in 4738ms
+ HEAD / 500 in 63ms
+[?25h
+
+c:\Users\AKASH\Downloads\files\ai-voice-sales>
