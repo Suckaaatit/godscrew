@@ -37,8 +37,9 @@ export async function POST(req: NextRequest) {
     }
 
     const body = parsed.data;
-    callId = body.call_id;
-    prospectId = body.prospect_id;
+    callId = body.call_id || body.retell_call_id || `email-only-${Date.now()}`;
+    prospectId = body.prospect_id || 'unknown';
+    const hasDbContext = Boolean(body.call_id && body.prospect_id);
 
     // Authenticate — only internal calls allowed
     if (body.secret !== config.app.internalSecret) {
@@ -55,14 +56,18 @@ export async function POST(req: NextRequest) {
       company_name: body.company_name || null,
     });
 
-    const { data: prospectRow, error: prospectLookupError } = await supabase
-      .from('prospects')
-      .select('contact_name, company_name, metadata')
-      .eq('id', prospectId)
-      .maybeSingle();
+    let prospectRow: { contact_name: string | null; company_name: string | null; metadata: unknown } | null = null;
+    if (hasDbContext) {
+      const { data, error: prospectLookupError } = await supabase
+        .from('prospects')
+        .select('contact_name, company_name, metadata')
+        .eq('id', prospectId)
+        .maybeSingle();
+      prospectRow = data;
 
-    if (prospectLookupError) {
-      logError('process-payment: failed to fetch prospect profile', prospectLookupError, { callId, prospectId });
+      if (prospectLookupError) {
+        logError('process-payment: failed to fetch prospect profile', prospectLookupError, { callId, prospectId });
+      }
     }
 
     const prospectName =
@@ -83,25 +88,29 @@ export async function POST(req: NextRequest) {
 
     // ---- IDEMPOTENCY CHECK ----
     // If the same call was already processed, skip. If partially processed, resume safely.
-    const { data: existingPayment, error: existingPaymentError } = await supabase
-      .from('payments')
-      .select('id, stripe_session_id, email_sent')
-      .eq('call_id', callId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    let existingPayment: { id: string; stripe_session_id: string | null; email_sent: boolean } | null = null;
+    if (hasDbContext) {
+      const { data, error: existingPaymentError } = await supabase
+        .from('payments')
+        .select('id, stripe_session_id, email_sent')
+        .eq('call_id', callId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (existingPaymentError) {
-      logError('process-payment: failed to fetch existing payment', existingPaymentError, {
-        callId,
-        prospectId,
-      });
-      return NextResponse.json({ error: 'Failed to read payment state' }, { status: 500 });
-    }
+      existingPayment = data;
 
-    if (existingPayment?.email_sent) {
-      logInfo('process-payment: skipping — already processed', { callId, prospectId });
-      return NextResponse.json({ ok: true, skipped: true });
+      if (existingPaymentError) {
+        logError('process-payment: failed to fetch existing payment', existingPaymentError, {
+          callId,
+          prospectId,
+        });
+      }
+
+      if (existingPayment?.email_sent) {
+        logInfo('process-payment: skipping — already processed', { callId, prospectId });
+        return NextResponse.json({ ok: true, skipped: true });
+      }
     }
 
     // ---- STEP 1: Send Stripe payment link email via Resend ----
@@ -140,52 +149,57 @@ export async function POST(req: NextRequest) {
 
     // ---- STEP 2: Persist payment record ----
     // Update existing call-linked payment row when present, otherwise create one.
-    const paymentPayload = {
-      call_id: callId,
-      prospect_id: prospectId,
-      stripe_session_id: null,
-      amount_cents: amountCents,
-      status: 'pending',
-      email_sent: emailSent,
-      email_sent_at: emailSent ? new Date().toISOString() : null,
-    };
+    if (hasDbContext) {
+      const paymentPayload = {
+        call_id: callId,
+        prospect_id: prospectId,
+        stripe_session_id: null,
+        amount_cents: amountCents,
+        status: 'pending',
+        email_sent: emailSent,
+        email_sent_at: emailSent ? new Date().toISOString() : null,
+      };
 
-    let paymentError: unknown = null;
-    if (existingPayment?.id) {
-      const { error: updateError } = await supabase
-        .from('payments')
-        .update(paymentPayload)
-        .eq('id', existingPayment.id);
-      paymentError = updateError;
-    } else {
-      const { error: insertError } = await supabase.from('payments').insert(paymentPayload);
-      paymentError = insertError;
+      let paymentError: unknown = null;
+      if (existingPayment?.id) {
+        const { error: updateError } = await supabase
+          .from('payments')
+          .update(paymentPayload)
+          .eq('id', existingPayment.id);
+        paymentError = updateError;
+      } else {
+        const { error: insertError } = await supabase.from('payments').insert(paymentPayload);
+        paymentError = insertError;
+      }
+
+      if (paymentError) {
+        logError('process-payment: payment persist failed', paymentError, { callId, prospectId });
+      }
+
+      // ---- STEP 3: Update prospect status ----
+      const { error: prospectError } = await supabase
+        .from('prospects')
+        .update({ status: 'interested', email, updated_at: new Date().toISOString() })
+        .eq('id', prospectId);
+
+      if (prospectError) {
+        logError('process-payment: prospect update failed', prospectError, { callId, prospectId });
+      }
+
+      if (emailSent) {
+        await updateProspectEmailTracking({
+          prospectId,
+          email,
+          metadata: (prospectRow?.metadata as Record<string, unknown>) || {},
+        });
+      }
+
+      logInfo('process-payment: completed successfully', { callId, prospectId, paymentLink });
+      return NextResponse.json({ ok: true });
     }
 
-    if (paymentError) {
-      logError('process-payment: payment persist failed', paymentError, { callId, prospectId });
-    }
-
-    // ---- STEP 3: Update prospect status ----
-    const { error: prospectError } = await supabase
-      .from('prospects')
-      .update({ status: 'interested', email, updated_at: new Date().toISOString() })
-      .eq('id', prospectId);
-
-    if (prospectError) {
-      logError('process-payment: prospect update failed', prospectError, { callId, prospectId });
-    }
-
-    if (emailSent) {
-      await updateProspectEmailTracking({
-        prospectId,
-        email,
-        metadata: (prospectRow?.metadata as Record<string, unknown>) || {},
-      });
-    }
-
-    logInfo('process-payment: completed successfully', { callId, prospectId, paymentLink });
-    return NextResponse.json({ ok: true });
+    logInfo('process-payment: completed in email-only mode', { callId, paymentLink });
+    return NextResponse.json({ ok: true, email_only: true });
   } catch (err) {
     logError('process-payment: unhandled error (dead-letter cron will retry)', err, { callId, prospectId });
     return NextResponse.json({ error: 'Failed' }, { status: 500 });

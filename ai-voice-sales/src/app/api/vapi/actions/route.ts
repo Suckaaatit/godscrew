@@ -211,119 +211,119 @@ async function handleSendPaymentEmail(
     return "I didn't catch a valid email. Could you spell that out for me one more time?";
   }
 
+  // Try to map to DB records when available. If context is missing (agent mode),
+  // still continue and send the email in fallback mode.
+  let dbCallId: string | null = null;
+  let prospectId: string | null = null;
+
   if (!callId) {
-    logError('send_payment_email: no callId available', new Error('Missing callId'));
-    return "I'm having a technical issue. Let me try again in a moment.";
-  }
-
-  // Look up existing call record to get prospect_id
-  let dbCallId: string;
-  let prospectId: string;
-
-  try {
-    const { data: callData, error: callLookupError } = await supabase
-      .from('calls')
-      .select('id, prospect_id')
-      .eq('retell_call_id', callId)
-      .maybeSingle();
-
-    if (callLookupError && callLookupError.code !== 'PGRST116') {
-      logError('send_payment_email: call lookup failed', callLookupError, { callId });
-      return "I'm having a technical issue. Let me try again.";
-    }
-
-    if (callData?.id && callData?.prospect_id) {
-      dbCallId = callData.id;
-      prospectId = callData.prospect_id;
-    } else {
-      // Call record doesn't exist yet (out-of-order) — create it from metadata
-      const metaProspectId = metadata?.prospect_id;
-      if (!metaProspectId) {
-        logError('send_payment_email: no prospect_id in metadata', new Error('Missing prospect_id'), { callId });
-        return "I'm having a technical issue. Let me try again.";
-      }
-
-      const { data: newCall, error: insertError } = await supabase
+    logWarn('send_payment_email: no callId available, continuing in email-only mode');
+  } else {
+    try {
+      const { data: callData, error: callLookupError } = await supabase
         .from('calls')
-        .upsert(
-          {
-            retell_call_id: callId,
-            prospect_id: metaProspectId,
-            phone: metadata?.phone || null,
-            started_at: new Date().toISOString(),
-          },
-          { onConflict: 'retell_call_id' }
-        )
         .select('id, prospect_id')
+        .eq('retell_call_id', callId)
         .maybeSingle();
 
-      if (insertError || !newCall) {
-        logError('send_payment_email: failed to create call record', insertError || new Error('No data returned'), { callId });
-        return "I'm having a technical issue. Let me try again.";
+      if (callLookupError && callLookupError.code !== 'PGRST116') {
+        logError('send_payment_email: call lookup failed', callLookupError, { callId });
       }
 
-      dbCallId = newCall.id;
-      prospectId = newCall.prospect_id;
+      if (callData?.id && callData?.prospect_id) {
+        dbCallId = callData.id;
+        prospectId = callData.prospect_id;
+      } else {
+        // Call record doesn't exist yet (out-of-order). Try metadata prospect_id.
+        const metaProspectId = metadata?.prospect_id;
+        if (metaProspectId) {
+          const { data: newCall, error: insertError } = await supabase
+            .from('calls')
+            .upsert(
+              {
+                retell_call_id: callId,
+                prospect_id: metaProspectId,
+                phone: metadata?.phone || null,
+                started_at: new Date().toISOString(),
+              },
+              { onConflict: 'retell_call_id' }
+            )
+            .select('id, prospect_id')
+            .maybeSingle();
+
+          if (insertError || !newCall) {
+            logError('send_payment_email: failed to create call record', insertError || new Error('No data returned'), { callId });
+          } else {
+            dbCallId = newCall.id;
+            prospectId = newCall.prospect_id;
+          }
+        } else {
+          logWarn('send_payment_email: no prospect_id in metadata, continuing in email-only mode', { callId });
+        }
+      }
+    } catch (lookupErr) {
+      logError('send_payment_email: call/prospect lookup failed, continuing in email-only mode', lookupErr, { callId });
     }
-  } catch (lookupErr) {
-    logError('send_payment_email: call lookup failed', lookupErr, { callId });
-    return "I'm having a technical issue. Let me try again.";
   }
 
   // Update prospect email
-  try {
-    await supabase
-      .from('prospects')
-      .update({ email, updated_at: new Date().toISOString() })
-      .eq('id', prospectId);
-  } catch (emailUpdateErr) {
-    logError('send_payment_email: prospect email update failed', emailUpdateErr, { prospectId });
+  if (prospectId) {
+    try {
+      await supabase
+        .from('prospects')
+        .update({ email, updated_at: new Date().toISOString() })
+        .eq('id', prospectId);
+    } catch (emailUpdateErr) {
+      logError('send_payment_email: prospect email update failed', emailUpdateErr, { prospectId });
+    }
   }
 
   // Ensure a placeholder payment row exists so dead-letter cron can retry
   // even if the self-call to /api/internal/process-payment fails.
-  try {
-    const { data: existingPayment, error: paymentLookupError } = await supabase
-      .from('payments')
-      .select('id')
-      .eq('call_id', dbCallId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  if (dbCallId && prospectId) {
+    try {
+      const { data: existingPayment, error: paymentLookupError } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('call_id', dbCallId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (paymentLookupError) {
-      logError('send_payment_email: payment lookup failed', paymentLookupError, {
-        callId: dbCallId,
-        prospectId,
-      });
-    } else if (!existingPayment) {
-      const { error: insertPaymentError } = await supabase.from('payments').insert({
-        call_id: dbCallId,
-        prospect_id: prospectId,
-        status: 'pending',
-        email_sent: false,
-      });
-
-      if (insertPaymentError) {
-        logError('send_payment_email: failed to insert placeholder payment row', insertPaymentError, {
+      if (paymentLookupError) {
+        logError('send_payment_email: payment lookup failed', paymentLookupError, {
           callId: dbCallId,
           prospectId,
         });
+      } else if (!existingPayment) {
+        const { error: insertPaymentError } = await supabase.from('payments').insert({
+          call_id: dbCallId,
+          prospect_id: prospectId,
+          status: 'pending',
+          email_sent: false,
+        });
+
+        if (insertPaymentError) {
+          logError('send_payment_email: failed to insert placeholder payment row', insertPaymentError, {
+            callId: dbCallId,
+            prospectId,
+          });
+        }
       }
+    } catch (paymentPrepErr) {
+      logError('send_payment_email: payment preparation failed', paymentPrepErr, {
+        callId: dbCallId,
+        prospectId,
+      });
     }
-  } catch (paymentPrepErr) {
-    logError('send_payment_email: payment preparation failed', paymentPrepErr, {
-      callId: dbCallId,
-      prospectId,
-    });
   }
 
   // Fire background self-call for Stripe + Resend (non-blocking)
   fireBackgroundPayment({
-    call_id: dbCallId,
-    prospect_id: prospectId,
+    call_id: dbCallId || undefined,
+    prospect_id: prospectId || undefined,
     email,
-    retell_call_id: callId,
+    retell_call_id: callId || `agent-mode-${Date.now()}`,
     secret: config.app.internalSecret,
     plan_tier: planSelection.planTier,
     plan_label: planSelection.planLabel,
@@ -332,7 +332,7 @@ async function handleSendPaymentEmail(
     company_name: companyName || undefined,
   });
 
-  console.log('[SEND EMAIL] Background dispatch queued:', { callId, prospectId, plan_tier: planSelection.planTier });
+  console.log('[SEND EMAIL] Background dispatch queued:', { callId: dbCallId || callId || null, prospectId, plan_tier: planSelection.planTier });
   logInfo('send_payment_email: background payment fired', { callId, prospectId, email: email.replace(/(.{2}).*(@.*)/, '$1***$2') });
 
   return "I'm sending that payment link to your email right now. While that's on its way, let me ask you — what's been your biggest challenge with your current setup?";

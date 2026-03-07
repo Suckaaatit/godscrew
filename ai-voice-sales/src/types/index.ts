@@ -86,8 +86,8 @@ export type VapiWebhookPayload = z.infer<typeof VapiWebhookPayloadSchema>;
 // Internal Process Payment Payload
 // ============================================================
 export const ProcessPaymentPayloadSchema = z.object({
-  call_id: z.string().uuid('call_id must be a UUID'),
-  prospect_id: z.string().uuid('prospect_id must be a UUID'),
+  call_id: z.string().uuid('call_id must be a UUID').optional(),
+  prospect_id: z.string().uuid('prospect_id must be a UUID').optional(),
   email: z.string().email('email must be valid'),
   retell_call_id: z.string().min(1, 'retell_call_id is required'),
   secret: z.string().min(1, 'secret is required'),
