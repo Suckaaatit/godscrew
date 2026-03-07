@@ -6,6 +6,7 @@ import type { ProcessPaymentPayload, VapiToolCall } from '@/types';
 import { logInfo, logWarn, logError } from '@/lib/logger';
 
 export const maxDuration = 60;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * POST /api/vapi/actions
@@ -69,12 +70,15 @@ export async function POST(req: NextRequest) {
         const toolCallId = toolCall.id;
         const dedupKey = callId ? `${callId}:${toolCallId}` : toolCallId;
         const functionName = toolCall.function.name;
+        console.log('[VAPI TOOL CALL] Function:', functionName);
+        console.log('[VAPI TOOL CALL] Raw args:', toolCall.function.arguments || '{}');
         let args: Record<string, unknown> = {};
         try {
           args = JSON.parse(toolCall.function.arguments || '{}') as Record<string, unknown>;
         } catch {
           logWarn('Vapi actions: failed to parse tool call arguments', { toolCallId, functionName });
         }
+        console.log('[VAPI TOOL CALL] Parsed args:', JSON.stringify(args));
 
         // DEDUP: Check if this exact tool call was already processed
         const { data: existing, error: existingLookupError } = await supabase
@@ -187,12 +191,13 @@ async function handleSendPaymentEmail(
   metadata: Record<string, string> | undefined
 ): Promise<string> {
   const rawEmail = String(args.email || args.recipient_email || '');
-  const email = cleanEmail(rawEmail);
+  const email = sanitizeEmail(rawEmail);
   const planSelection = parsePlanSelection(args);
   const prospectName = safeTextArg(args, ['prospect_name', 'name', 'contact_name']);
   const companyName = safeTextArg(args, ['company_name', 'property_name', 'property']);
   const paymentLink = planSelection.planTier === 'two_incident' ? config.stripe.link1100 : config.stripe.link650;
 
+  console.log('[SEND EMAIL] Raw:', rawEmail, '-> Sanitized:', email);
   console.log('[SEND EMAIL] Args:', {
     email,
     plan_tier: planSelection.planTier,
@@ -201,7 +206,8 @@ async function handleSendPaymentEmail(
   });
   console.log('[SEND EMAIL] Using payment link:', paymentLink);
 
-  if (!email || !email.includes('@') || !email.includes('.')) {
+  if (!email || !EMAIL_REGEX.test(email)) {
+    logWarn('send_payment_email: invalid email after sanitization', { rawEmail, sanitizedEmail: email });
     return "I didn't catch a valid email. Could you spell that out for me one more time?";
   }
 
@@ -559,18 +565,25 @@ async function handleDoNotCall(
 // Email Cleanup
 // STT engines pass emails as "john at gmail dot com" or with spaces
 // ============================================================
-function cleanEmail(raw: string): string {
-  return raw
-    .toLowerCase()
-    .trim()
-    .replace(/\s+at\s+/gi, '@')
-    .replace(/\s+dot\s+/gi, '.')
-    .replace(/\s+/g, '')
-    .replace(/\bat\b/gi, '@')
-    .replace(/\bdot\b/gi, '.')
-    .replace(/[,;]/g, '.')
-    .replace(/\.+/g, '.')
-    .replace(/@+/g, '@');
+function sanitizeEmail(raw: string): string {
+  if (!raw) return '';
+
+  let email = raw.toLowerCase().trim();
+  email = email.replace(/\s*@\s*/g, '@');
+  email = email.replace(/\s*\.\s*/g, '.');
+  email = email.replace(/\s+at\s+/g, '@');
+  email = email.replace(/\s+dot\s+/g, '.');
+  email = email.replace(/\bat\s+/g, '@');
+  email = email.replace(/\s+at\b/g, '@');
+  email = email.replace(/\bdot\s+/g, '.');
+  email = email.replace(/\s+dot\b/g, '.');
+  email = email.replace(/\s+/g, '');
+  email = email.replace(/@@+/g, '@');
+  email = email.replace(/\.\.+/g, '.');
+  email = email.replace(/^\./, '');
+  email = email.replace(/\.$/, '');
+
+  return email;
 }
 
 function safeTextArg(args: Record<string, unknown>, keys: string[]): string {
