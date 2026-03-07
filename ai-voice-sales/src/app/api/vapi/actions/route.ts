@@ -170,7 +170,7 @@ async function handleSendPaymentEmail(
   callId: string | undefined,
   metadata: Record<string, string> | undefined
 ): Promise<string> {
-  const rawEmail = String(args.email || args.prospect_email || '');
+  const rawEmail = String(args.email || args.recipient_email || '');
   const email = cleanEmail(rawEmail);
 
   if (!email || !email.includes('@') || !email.includes('.')) {
