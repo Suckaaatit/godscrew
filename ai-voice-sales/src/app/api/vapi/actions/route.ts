@@ -26,7 +26,13 @@ export const maxDuration = 60;
  */
 export async function POST(req: NextRequest) {
   try {
-    const rawBody: unknown = await req.json();
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      logWarn('Vapi actions: invalid JSON body');
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
     const parsed = VapiWebhookPayloadSchema.safeParse(rawBody);
 
     if (!parsed.success) {
@@ -308,9 +314,19 @@ async function handleSendPaymentEmail(
  */
 function fireBackgroundPayment(payload: ProcessPaymentPayload): void {
   const url = `${config.app.url}/api/internal/process-payment`;
+  const dashboardUser = process.env.DASHBOARD_BASIC_USER?.trim();
+  const dashboardPass = process.env.DASHBOARD_BASIC_PASS?.trim() ?? "";
+  const basicAuth =
+    dashboardUser && dashboardUser.length > 0
+      ? `Basic ${Buffer.from(`${dashboardUser}:${dashboardPass}`).toString("base64")}`
+      : null;
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (basicAuth) headers.Authorization = basicAuth;
+
   fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(payload),
   }).catch((err) => {
     logError('fireBackgroundPayment: self-call failed (dead-letter cron will retry)', err, {

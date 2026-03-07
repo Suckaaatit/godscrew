@@ -6,6 +6,6 @@ import { config } from './config';
  * All Stripe API calls MUST include idempotency keys tied to the logical transaction
  * (e.g., call_id or payment attempt ID), NOT random UUIDs.
  */
-export const stripe = new Stripe(config.stripe.secretKey, {
+export const stripe = new Stripe(config.stripe.secretKey.trim(), {
   apiVersion: '2025-02-24.acacia',
 });

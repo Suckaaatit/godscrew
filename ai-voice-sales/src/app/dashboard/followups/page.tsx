@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PhoneCall } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -56,47 +56,50 @@ export default function FollowupsPage() {
   const pageSize = 20;
   const totalPages = Math.max(Math.ceil(count / pageSize), 1);
 
-  const load = async (silent = false) => {
-    if (!silent) setLoading(true);
-    setError("");
-    try {
-      const [listRes, pendingRes] = await Promise.all([
-        fetch(
-          `/api/dashboard/followups?page=${page}&limit=${pageSize}&status=${encodeURIComponent(status)}&dateFrom=${encodeURIComponent(dateFrom)}&dateTo=${encodeURIComponent(dateTo)}`,
-          { cache: "no-store" }
-        ),
-        fetch("/api/dashboard/followups?page=1&limit=1&status=pending", { cache: "no-store" }),
-      ]);
+  const load = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
+      setError("");
+      try {
+        const [listRes, pendingRes] = await Promise.all([
+          fetch(
+            `/api/dashboard/followups?page=${page}&limit=${pageSize}&status=${encodeURIComponent(status)}&dateFrom=${encodeURIComponent(dateFrom)}&dateTo=${encodeURIComponent(dateTo)}`,
+            { cache: "no-store" }
+          ),
+          fetch("/api/dashboard/followups?page=1&limit=1&status=pending", { cache: "no-store" }),
+        ]);
 
-      const payload = (await listRes.json()) as FollowupResponse;
-      if (!listRes.ok || payload.error) throw new Error(payload.error || "Failed to load followups.");
-      setRows(payload.data || []);
-      setCount(payload.count || 0);
+        const payload = (await listRes.json()) as FollowupResponse;
+        if (!listRes.ok || payload.error) throw new Error(payload.error || "Failed to load followups.");
+        setRows(payload.data || []);
+        setCount(payload.count || 0);
 
-      const pendingPayload = (await pendingRes.json()) as FollowupResponse;
-      if (pendingRes.ok && !pendingPayload.error) {
-        setPendingCount(pendingPayload.count || 0);
+        const pendingPayload = (await pendingRes.json()) as FollowupResponse;
+        if (pendingRes.ok && !pendingPayload.error) {
+          setPendingCount(pendingPayload.count || 0);
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to load followups.";
+        setRows([]);
+        setCount(0);
+        setPendingCount(0);
+        setError(message);
+        toast.error(message);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to load followups.";
-      setRows([]);
-      setCount(0);
-      setPendingCount(0);
-      setError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [page, pageSize, status, dateFrom, dateTo]
+  );
 
   useEffect(() => {
     void load();
-  }, [page, status, dateFrom, dateTo]);
+  }, [load]);
 
   useEffect(() => {
     const id = window.setInterval(() => void load(true), 30000);
     return () => window.clearInterval(id);
-  }, [page, status, dateFrom, dateTo]);
+  }, [load]);
 
   const dialNow = async (id: string) => {
     try {
@@ -111,6 +114,18 @@ export default function FollowupsPage() {
       void load(true);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to dial followup.");
+    }
+  };
+
+  const runCron = async () => {
+    try {
+      const response = await fetch("/api/dashboard/run-cron", { method: "POST", cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok || payload.error) throw new Error(payload.error || "Cron run failed.");
+      toast.success("Cron run completed.");
+      void load(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Cron run failed.");
     }
   };
 
@@ -184,6 +199,9 @@ export default function FollowupsPage() {
         />
         <Button onClick={() => void load()} variant="outline">
           Refresh
+        </Button>
+        <Button onClick={() => void runCron()} variant="outline">
+          Run Cron
         </Button>
       </div>
 

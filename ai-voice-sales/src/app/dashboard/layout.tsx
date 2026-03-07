@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(56,182,255,0.18),transparent_34%),radial-gradient(circle_at_100%_0%,rgba(0,212,255,0.12),transparent_36%)]" />
       <Sidebar health={health} />
       <div className="min-w-0 flex-1">
-        <main className="page-enter h-screen overflow-y-auto p-5 md:p-6">{children}</main>
+        <main className="page-enter h-screen overflow-y-auto p-5 pt-16 md:p-6 md:pt-6">{children}</main>
       </div>
       <AppToaster />
     </div>

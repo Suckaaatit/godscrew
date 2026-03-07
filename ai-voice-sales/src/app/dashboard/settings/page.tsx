@@ -375,6 +375,23 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Calling Hours</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="rounded-xl border border-[var(--line)] bg-[rgba(255,255,255,0.02)] px-3 py-2">
+              <p className="text-[var(--text-muted)]">Active window</p>
+              <p className="mt-1 text-white" data-mono="true">
+                Monday-Saturday, 9:00 AM - 6:00 PM (local)
+              </p>
+            </div>
+            <p className="text-xs text-[var(--text-muted)]">
+              Calls outside this window are skipped by scheduling logic.
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
