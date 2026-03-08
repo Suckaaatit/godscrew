@@ -19,7 +19,14 @@ function loadConfig() {
     );
   }
 
-  const clean = (value: string) => value.trim().replace(/\\r/g, "").replace(/\\n/g, "");
+  const clean = (value: string) =>
+    value
+      .replace(/\r/g, "")
+      .replace(/\n/g, "")
+      .replace(/\\r/g, "")
+      .replace(/\\n/g, "")
+      .replace(/^['"]+|['"]+$/g, "")
+      .trim();
   const cleanOrFallback = (value: string | undefined, fallback: string) => {
     const next = typeof value === "string" ? value.trim() : "";
     return next || fallback;

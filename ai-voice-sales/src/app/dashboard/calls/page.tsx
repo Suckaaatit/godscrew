@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -165,32 +165,35 @@ export default function CallsPage() {
   const pageSize = 20;
   const totalPages = Math.max(Math.ceil(count / pageSize), 1);
 
-  const load = async (silent = false) => {
-    if (!silent) setLoading(true);
-    try {
-      const response = await fetch(
-        `/api/dashboard/calls?page=${page}&limit=${pageSize}&outcome=${encodeURIComponent(outcome)}&dateFrom=${encodeURIComponent(dateFrom)}&dateTo=${encodeURIComponent(dateTo)}&sortBy=created_at&sortDirection=desc`,
-        { cache: "no-store" }
-      );
-      const payload = (await response.json()) as CallsResponse;
-      if (!response.ok || payload.error) throw new Error(payload.error || "Failed to load calls.");
-      setRows(payload.data || []);
-      setCount(payload.count || 0);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to load calls.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const load = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
+      try {
+        const response = await fetch(
+          `/api/dashboard/calls?page=${page}&limit=${pageSize}&outcome=${encodeURIComponent(outcome)}&dateFrom=${encodeURIComponent(dateFrom)}&dateTo=${encodeURIComponent(dateTo)}&sortBy=created_at&sortDirection=desc`,
+          { cache: "no-store" }
+        );
+        const payload = (await response.json()) as CallsResponse;
+        if (!response.ok || payload.error) throw new Error(payload.error || "Failed to load calls.");
+        setRows(payload.data || []);
+        setCount(payload.count || 0);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to load calls.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [page, pageSize, outcome, dateFrom, dateTo]
+  );
 
   useEffect(() => {
     void load();
-  }, [page, outcome, dateFrom, dateTo]);
+  }, [load]);
 
   useEffect(() => {
     const id = window.setInterval(() => void load(true), 30000);
     return () => window.clearInterval(id);
-  }, [page, outcome, dateFrom, dateTo]);
+  }, [load]);
 
   const transcriptMap = useMemo(
     () =>

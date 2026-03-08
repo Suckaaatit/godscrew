@@ -37,7 +37,9 @@ export async function GET(req: NextRequest) {
 
     let query = supabase
       .from("prospects")
-      .select("*", { count: "exact" })
+      .select("id, contact_name, phone, company_name, status, total_calls, last_called_at, created_at", {
+        count: "estimated",
+      })
       .order(safeSortBy, { ascending: sortDirection, nullsFirst: false })
       .range(offset, offset + limit - 1);
 

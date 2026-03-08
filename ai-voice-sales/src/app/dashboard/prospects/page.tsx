@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Ban, CalendarPlus, PhoneCall, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -154,23 +154,26 @@ export default function ProspectsPage() {
   const selected = detail?.prospect || null;
   const latestCall = detail?.calls?.[0] || null;
 
-  const load = async (silent = false) => {
-    if (!silent) setLoading(true);
-    try {
-      const response = await fetch(
-        `/api/dashboard/prospects?page=${page}&pageSize=${pageSize}&status=${encodeURIComponent(status)}&search=${encodeURIComponent(search)}&sortBy=created_at&sortDirection=desc`,
-        { cache: "no-store" }
-      );
-      const payload = (await response.json()) as ProspectListResponse;
-      if (!response.ok || payload.error) throw new Error(payload.error || "Failed to load prospects.");
-      setRows(payload.data || []);
-      setCount(payload.count || 0);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to load prospects.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const load = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
+      try {
+        const response = await fetch(
+          `/api/dashboard/prospects?page=${page}&pageSize=${pageSize}&status=${encodeURIComponent(status)}&search=${encodeURIComponent(search)}&sortBy=created_at&sortDirection=desc`,
+          { cache: "no-store" }
+        );
+        const payload = (await response.json()) as ProspectListResponse;
+        if (!response.ok || payload.error) throw new Error(payload.error || "Failed to load prospects.");
+        setRows(payload.data || []);
+        setCount(payload.count || 0);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to load prospects.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [page, pageSize, status, search]
+  );
 
   const loadDetail = async (id: string) => {
     setDetailLoading(true);
@@ -191,12 +194,12 @@ export default function ProspectsPage() {
 
   useEffect(() => {
     void load();
-  }, [page, status, search]);
+  }, [load]);
 
   useEffect(() => {
     const id = window.setInterval(() => void load(true), 30000);
     return () => window.clearInterval(id);
-  }, [page, status, search]);
+  }, [load]);
 
   const refresh = async () => {
     await load();

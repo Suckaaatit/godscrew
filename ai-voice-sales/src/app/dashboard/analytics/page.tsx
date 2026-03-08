@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ChartColumn, RefreshCw } from "lucide-react";
 import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -344,49 +344,55 @@ export default function AnalyticsPage() {
   const [animateBars, setAnimateBars] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const load = async (silent = false) => {
-    if (!silent) setLoading(true);
-    setError("");
-    try {
-      const query = new URLSearchParams();
-      query.set("preset", preset);
-      query.set("propertyType", propertyType);
-      if (preset === "custom") {
-        if (dateFrom) query.set("dateFrom", dateFrom);
-        if (dateTo) query.set("dateTo", dateTo);
-      }
+  const load = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
+      setError("");
+      try {
+        const query = new URLSearchParams();
+        query.set("preset", preset);
+        query.set("propertyType", propertyType);
+        if (preset === "custom") {
+          if (dateFrom) query.set("dateFrom", dateFrom);
+          if (dateTo) query.set("dateTo", dateTo);
+        }
 
-      const response = await fetch(`/api/dashboard/analytics?${query.toString()}`, { cache: "no-store" });
-      const payload = (await response.json()) as AnalyticsApiPayload;
-      if (!response.ok || payload.error || !payload.data) {
-        throw new Error(payload.error || "Failed to load analytics.");
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 15000);
+        const response = await fetch(`/api/dashboard/analytics?${query.toString()}`, { cache: "no-store", signal: controller.signal }).finally(() => window.clearTimeout(timeout));
+        const payload = (await response.json()) as AnalyticsApiPayload;
+        const analyticsData = payload.data;
+        if (!response.ok || payload.error || !analyticsData) {
+          throw new Error(payload.error || "Failed to load analytics.");
+        }
+        setData(analyticsData);
+        setSelectedCategoryId((prev) =>
+          prev === null ? (analyticsData.objection_heatmap[0]?.category_id ?? null) : prev
+        );
+        setSelectedCallId((prev) => (prev === null ? (analyticsData.calls[0]?.call_id ?? null) : prev));
+        setAnimateBars(false);
+        window.setTimeout(() => setAnimateBars(true), 40);
+      } catch (error) {
+        const message = error instanceof DOMException && error.name === "AbortError"
+          ? "Analytics request timed out. Try a narrower date range or refresh."
+          : error instanceof Error ? error.message : "Failed to load analytics.";
+        setError(message);
+        toast.error(message);
+      } finally {
+        setLoading(false);
       }
-      setData(payload.data);
-      if (!selectedCategoryId && payload.data.objection_heatmap.length) {
-        setSelectedCategoryId(payload.data.objection_heatmap[0].category_id);
-      }
-      if (!selectedCallId && payload.data.calls.length) {
-        setSelectedCallId(payload.data.calls[0].call_id);
-      }
-      setAnimateBars(false);
-      window.setTimeout(() => setAnimateBars(true), 40);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to load analytics.";
-      setError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [preset, propertyType, dateFrom, dateTo]
+  );
 
   useEffect(() => {
     void load();
-  }, [preset, propertyType, dateFrom, dateTo]);
+  }, [load]);
 
   useEffect(() => {
     const id = window.setInterval(() => void load(true), 30000);
     return () => window.clearInterval(id);
-  }, [preset, propertyType, dateFrom, dateTo]);
+  }, [load]);
 
   const selectedCategory = useMemo(
     () => data?.objection_heatmap.find((row) => row.category_id === selectedCategoryId) || null,
@@ -640,7 +646,7 @@ export default function AnalyticsPage() {
                 <p className="text-2xl font-semibold text-white">{data.stage_rates.pitch_success_rate}%</p>
                 <TrendChip value={data.trend.pitch_delta} />
                 <div className="h-[180px]">
-                  <ResponsiveContainer height="100%" width="100%">
+                  <ResponsiveContainer height="100%" width="100%" minWidth={0} minHeight={0}>
                     <PieChart>
                       <Pie data={pitchDonut} cx="50%" cy="48%" dataKey="value" innerRadius={42} outerRadius={72} paddingAngle={2}>
                         {pitchDonut.map((entry) => (
@@ -676,7 +682,7 @@ export default function AnalyticsPage() {
                 <p className="text-2xl font-semibold text-white">{data.stage_rates.objection_overcome_rate}%</p>
                 <TrendChip value={data.trend.objections_delta} />
                 <div className="h-[180px]">
-                  <ResponsiveContainer height="100%" width="100%">
+                  <ResponsiveContainer height="100%" width="100%" minWidth={0} minHeight={0}>
                     <BarChart data={objectionBar} layout="vertical" margin={{ top: 2, right: 12, left: 0, bottom: 2 }}>
                       <XAxis hide type="number" />
                       <YAxis axisLine={false} dataKey="name" tick={{ fill: "#8ca8bb", fontSize: 11 }} tickLine={false} type="category" width={28} />
@@ -716,7 +722,7 @@ export default function AnalyticsPage() {
                 <p className="text-2xl font-semibold text-white">{data.stage_rates.close_rate}%</p>
                 <TrendChip value={data.trend.close_delta} />
                 <div className="h-[180px]">
-                  <ResponsiveContainer height="100%" width="100%">
+                  <ResponsiveContainer height="100%" width="100%" minWidth={0} minHeight={0}>
                     <PieChart>
                       <Pie
                         data={closingDonut}

@@ -1,4 +1,3 @@
-import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 type GodsCrewLogoProps = {
@@ -8,10 +7,9 @@ type GodsCrewLogoProps = {
 };
 
 export function GodsCrewLogo({ className, size = 34, withGlow = false }: GodsCrewLogoProps) {
-  const logoId = useId();
-  const ringGradientId = `${logoId}-ring-gradient`;
-  const centerGradientId = `${logoId}-center-gradient`;
-  const glossGradientId = `${logoId}-gloss-gradient`;
+  const ringGradientId = "gc-ring-gradient";
+  const centerGradientId = "gc-center-gradient";
+  const glossGradientId = "gc-gloss-gradient";
 
   return (
     <div

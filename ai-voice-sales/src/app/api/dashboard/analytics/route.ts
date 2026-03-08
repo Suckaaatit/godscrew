@@ -15,7 +15,7 @@ import {
   type ObjectionCategoryId,
   type PropertyType,
 } from "@/lib/call-analytics";
-import { fail, ok, requireSupabaseConfigured, withErrorHandling } from "@/app/api/dashboard/_utils";
+import { ok, requireSupabaseConfigured, withErrorHandling } from "@/app/api/dashboard/_utils";
 
 export const maxDuration = 60;
 
@@ -561,7 +561,6 @@ function summarize(rows: AnalyticsCallRow[]) {
   const topKillerCategory = heatmap.find((row) => row.frequency > 0) || null;
   const topKillerName = topKillerCategory ? `${topKillerCategory.category_id}. ${topKillerCategory.category_label}` : "None";
 
-  const closeRate = pct(closedPaid, interested);
   const emailCollectedCount = rows.filter((row) => row.analytics.email_collected).length;
   const emailToPaymentRate = pct(closedPaid, emailCollectedCount);
 
